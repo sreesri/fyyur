@@ -16,7 +16,7 @@ from forms import *
 import sys
 from flask_migrate import Migrate, migrate
 from sqlalchemy.ext.declarative import DeclarativeMeta
-from models import *
+
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -28,7 +28,10 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
+#----------------------------------------------------------------------------#
+# Models.
+#----------------------------------------------------------------------------#
+from models import *
 
 
 #----------------------------------------------------------------------------#
