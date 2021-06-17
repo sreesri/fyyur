@@ -2,10 +2,12 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+from models import *
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import (Flask, render_template, request,
+                   Response, flash, redirect, url_for)
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 import logging
@@ -25,13 +27,8 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-from models import *
 
 
 #----------------------------------------------------------------------------#
@@ -192,13 +189,19 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     try:
-        reqform = request.form
+        form = VenueForm()
 
-        venue = Venue(name=reqform['name'], city=reqform['city'], state=reqform['state'], address=reqform['address'],
-                      phone=reqform['phone'], image_link=reqform['image_link'], genres=reqform.getlist('genres'),
-                      facebook_link=reqform['facebook_link'], seeking_description=reqform['seeking_description'],
-                      website=reqform['website_link'], 
-                      seeking_talent=True if reqform.__contains__('seeking_talent') and reqform['seeking_talent'] == 'y' else False)
+        venue = Venue(name=form.name.data,
+                      city=form.city.data,
+                      state=form.state.data,
+                      address=form.address.data,
+                      phone=form.phone.data,
+                      image_link=form.image_link.data,
+                      genres=form.genres.data,
+                      facebook_link=form.facebook_link.data,
+                      seeking_description=form.seeking_description.data,
+                      website=form.website_link.data,
+                      seeking_talent=form.seeking_talent.data)
 
         db.session.add(venue)
         db.session.commit()
@@ -321,20 +324,20 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-    form = request.form
+    form = ArtistForm()
     try:
         artist = Artist.query.get(artist_id)
         if artist:
-            artist.name = form['name']
-            artist.city = form['city']
-            artist.state = form['state']
-            artist.phone = form['phone']
-            artist.genres = form.getlist('genres')
-            artist.image_link = form['image_link']
-            artist.facebook_link = form['facebook_link']
-            artist.website = form['website_link']
-            artist.seeking_venue = True if 'seeking_venue' in form else False
-            artist.seeking_description = form['seeking_description']
+            artist.name = form.name.data
+            artist.city = form.city.data
+            artist.state = form.state.data
+            artist.phone = form.phone.data
+            artist.genres = form.genres.data
+            artist.image_link = form.image_link.data
+            artist.facebook_link = form.facebook_link.data
+            artist.website = form.website_link.data
+            artist.seeking_venue = form.seeking_venue.data
+            artist.seeking_description = form.seeking_description.data
 
         db.session.add(artist)
         db.session.commit()
@@ -356,21 +359,21 @@ def edit_venue(venue_id):
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
 
-    form = request.form
+    form = VenueForm()
     try:
         venue = Venue.query.get(venue_id)
         if venue:
-            venue.name = form['name']
-            venue.city = form['city']
-            venue.state = form['state']
-            venue.address = form['address']
-            venue.phone = form['phone']
-            venue.genres = form.getlist('genres')
-            venue.image_link = form['image_link']
-            venue.facebook_link = form['facebook_link']
-            venue.website = form['website_link']
-            venue.seeking_talent = True if 'seeking_talent' in form else False
-            venue.seeking_description = form['seeking_description']
+            venue.name = form.name.data
+            venue.city = form.city.data
+            venue.state = form.state.data
+            venue.address = form.address.data
+            venue.phone = form.phone.data
+            venue.genres = form.genres.data
+            venue.image_link = form.image_link.data
+            venue.facebook_link = form.facebook_link.data
+            venue.website = form.website_link.data
+            venue.seeking_talent = form.seeking_talent.data
+            venue.seeking_description = form.seeking_description.data
         db.session.add(venue)
         db.session.commit()
     except:
@@ -440,21 +443,21 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-
-    try: 
-        artistId = request.form['artist_id']
-        venueId = request.form['venue_id']
-        startTime = request.form['start_time']
+    form = ShowForm()
+    try:
+        artistId = form.artist_id.data
+        venueId = form.venue_id.data
+        startTime = form.start_time.data
 
         show = Show(artist_id=artistId, venue_id=venueId, start_time=startTime)
         db.session.add(show)
         db.session.commit()
         flash('Show was successfully listed!')
-    except: 
+    except:
         flash('An error occurred. Show could not be listed.')
         db.session.rollback()
         print(sys.exc_info())
-    finally: 
+    finally:
         db.session.close()
 
     return render_template('pages/home.html')
